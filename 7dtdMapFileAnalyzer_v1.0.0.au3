@@ -128,7 +128,7 @@ Func ReadUini($sIniFile, $sLogFile)
 		$iIniError = $iIniError & "Source File, "
 	EndIf
 	If $iniCheck = $aOutputFileName Then
-		$aOutputFileName = "7dtdMapFileAnalyzer_map_info.csv"
+		$aOutputFileName = "7dtdMapFileAnalyzer_map_info"
 		$iIniFail += 1
 		$iIniError = $iIniError & "Output Filename, "
 	EndIf
@@ -210,7 +210,7 @@ Func UpdateIni($sIniFile)
 	FileWriteLine($sIniFile, @CRLF)
 	FileWriteLine($sIniFile, "POI Type and Search Strings Section: Fully customizable up to 50 POI types.")
 	FileWriteLine($sIniFile, "- Example: POI_1=[POI Type],[search string 1],[search string 2], etc. COMMA SEPARATED, NO SPACE.")
-	FileWriteLine($sIniFile, "- [search strings] can be partial strings. Ex. [POI1=Caves,caves_] can be used instead of [POI1=Caves,cave_05,cave_04,cave_03,cave_01]")
+	FileWriteLine($sIniFile, "- [search strings] can be partial strings. Ex. [POI_1=Caves,caves_] can be used instead of [POI_1=Caves,cave_05,cave_04,cave_03,cave_01]")
 	FileWriteLine($sIniFile, @CRLF)
 
 	For $i = 0 To ($aN - 1)
