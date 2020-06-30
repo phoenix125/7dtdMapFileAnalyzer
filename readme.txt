@@ -1,5 +1,5 @@
 7dtdMapFileAnalyzer - A Utility to analyze and compare the number of POIs in your map(s).
-- Latest version: 7dtdMapFileAnalyzer_v1.1 (2019-03-03)
+- Latest version: 7dtdMapFileAnalyzer_v1.1 (2020-06-29)
 - By Phoenix125 | http://www.Phoenix125.com | http://discord.gg/EU7pzPs | kim@kim125.com
 
 ----- FEATURES -----
@@ -44,6 +44,9 @@ Discord: http://discord.gg/EU7pzPs
 Forum:   https://phoenix125.createaforum.com/index.php
 
 ----- VERSION HISTORY -----
+(2020-06-29) v1.2
+- Updated default search criteria to match Alpha 19
+
 (2019-03-03) v1.1 
 - Added Graphical Interface
 - Recursive directory scan
