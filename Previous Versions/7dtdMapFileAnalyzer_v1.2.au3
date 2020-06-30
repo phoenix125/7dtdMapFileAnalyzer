@@ -1,11 +1,11 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=Resources\phoenix_5Vq_icon.ico
-#AutoIt3Wrapper_Outfile=Builds\7dtdMapFileAnalyzer_v1.1.exe
+#AutoIt3Wrapper_Outfile=Builds\7dtdMapFileAnalyzer_v1.2.exe
 #AutoIt3Wrapper_Res_Comment=By Phoenix125 http://www.Phoenix125.com
 #AutoIt3Wrapper_Res_Description=7 Days To Die Map Alanyzer Utility
-#AutoIt3Wrapper_Res_Fileversion=1.1.0.0
+#AutoIt3Wrapper_Res_Fileversion=1.2.0.0
 #AutoIt3Wrapper_Res_ProductName=7dtdMapFileAnalyzer
-#AutoIt3Wrapper_Res_ProductVersion=v1.1
+#AutoIt3Wrapper_Res_ProductVersion=v1.2
 #AutoIt3Wrapper_Res_CompanyName=http://www.Phoenix125.com
 #AutoIt3Wrapper_Res_LegalCopyright=https://github.com/phoenix125/7dtdMapFileAnalyzer/blob/master/7dtdMapFileAnalyzer.zip
 #AutoIt3Wrapper_Run_AU3Check=n
@@ -30,7 +30,7 @@
 #include <ListViewConstants.au3>
 
 Global $aUtilName = "7dtdMapFileAnalyzer"
-Global $aUtilVersion = "v1.1" ; (2019-03-03)
+Global $aUtilVersion = "v1.2" ; (2020-06-29)
 
 Global Const $aIniFile = @ScriptDir & "\" & $aUtilName & ".ini"
 Global Const $aIniPOI = @ScriptDir & "\" & $aUtilName & "_POI.ini"
@@ -48,61 +48,61 @@ Global $aRestart = False
 Opt("TrayMenuMode", 1)
 
 Local $i = 0
-$aEx[$i] = "Traders,settlement_trader_05,settlement_trader_04,settlement_trader_03,settlement_trader_02,settlement_trader_01"
+$aEx[$i] = "Traders,trader_"
 $i += 1
-$aEx[$i] = "Pharmacies,store_pharmacy_sm_"
+$aEx[$i] = "Pharmacies,store_pharmacy"
 $i += 1
-$aEx[$i] = "Gun Stores,store_gun_lg_01,store_gun_sm_01"
+$aEx[$i] = "Gun Stores,store_gun"
 $i += 1
-$aEx[$i] = "Book Stores,store_book_sm_01,store_book_lg_01"
+$aEx[$i] = "Book Stores,store_book"
 $i += 1
-$aEx[$i] = "Hardware Stores,store_hardware_sm_01,store_hardware_lg_01"
+$aEx[$i] = "Hardware Stores,store_hardware"
 $i += 1
-$aEx[$i] = "Grocery Stores,store_grocery_sm_01,store_grocery_lg_01"
+$aEx[$i] = "Grocery Stores,store_grocery"
 $i += 1
-$aEx[$i] = "Pawn Store,store_pawn_01"
+$aEx[$i] = "Pawn Store,store_pawn"
 $i += 1
-$aEx[$i] = "Skyscrapers,skyscraper_04,skyscraper_03,skyscraper_02,skyscraper_01"
+$aEx[$i] = "Skyscrapers,skyscraper_"
 $i += 1
-$aEx[$i] = "Hospitals,hospital_01"
+$aEx[$i] = "Hospitals,hospital_"
 $i += 1
-$aEx[$i] = "Football Stadiums,football_stadium"
+$aEx[$i] = "Football Stadiums,football_"
 $i += 1
-$aEx[$i] = "Gas Stations,gas_station"
+$aEx[$i] = "Gas Stations,gas_"
 $i += 1
-$aEx[$i] = "Refineries,utility_refinery_01"
+$aEx[$i] = "Refineries,utility_refinery"
 $i += 1
-$aEx[$i] = "Factories,factory_lg_02,factory_lg_01"
+$aEx[$i] = "Factories,factory_"
 $i += 1
 $aEx[$i] = "Garage,garage_"
 $i += 1
-$aEx[$i] = "Fire Stations,fire_station_02,fire_station_01"
+$aEx[$i] = "Fire Stations,fire_station"
 $i += 1
-$aEx[$i] = "Caves,cave_05,cave_04,cave_03,cave_01"
+$aEx[$i] = "Caves,cave_"
 $i += 1
-$aEx[$i] = "Parking Lots,parking_lot_03,parking_lot_02,parking_lot_01,parking_garage_01"
+$aEx[$i] = "Parking Lots,parking_lot"
 $i += 1
-$aEx[$i] = "Prison,prison_01"
+$aEx[$i] = "Prison,prison_"
 $i += 1
-$aEx[$i] = "Bomb Shelters,bombshelter_md_01,bombshelter_lg_01"
+$aEx[$i] = "Bomb Shelters,bombshelter_"
 $i += 1
-$aEx[$i] = "Water Works,utility_waterworks_01"
+$aEx[$i] = "Water Works,utility_waterworks"
 $i += 1
-$aEx[$i] = "Electric Companies,utility_electric_co_01"
+$aEx[$i] = "Electric Companies,utility_electric"
 $i += 1
 $aEx[$i] = "Churches,church_"
 $i += 1
-$aEx[$i] = "Schools,school_k6_01,school_daycare_01,school_01"
+$aEx[$i] = "Schools,school_"
 $i += 1
-$aEx[$i] = "Ranger Stations,ranger_station1"
+$aEx[$i] = "Ranger Stations,ranger_station"
 $i += 1
 $aEx[$i] = "Cabins,cabin_"
 $i += 1
 $aEx[$i] = "Houses,house_"
 $i += 1
-$aEx[$i] = "Hotels,hotel_roadside_02,hotel_roadside_01,hotel_ostrich,hotel_new_01"
+$aEx[$i] = "Hotels,hotel_"
 $i += 1
-$aEx[$i] = "Funeral Homes,funeral_home_01"
+$aEx[$i] = "Funeral Homes,funeral_"
 For $x = $i To 49
 	$aEx[$i] = ""
 Next
@@ -565,16 +565,16 @@ Func _MainGui()
 					Case $sSourceDiClick
 						Local $tSourceDIR = FileSelectFolder("Please select source folder. ex) GeneratedWorlds", $aSourceDir)
 						If @error Then
-						GUICtrlSetData($sSourceDir, $aSourceDIR)
+							GUICtrlSetData($sSourceDir, $aSourceDir)
 						Else
-						GUICtrlSetData($sSourceDir, $tSourceDIR)
+							GUICtrlSetData($sSourceDir, $tSourceDIR)
 						EndIf
 					Case $sOutputFoldeClick
 						Local $tOutputFolder = FileSelectFolder("Please select output folder", $aOutputFolder)
 						If @error Then
 							GUICtrlSetData($sOutputFolder, $aOutputFolder)
 						Else
-						GUICtrlSetData($sOutputFolder, $tOutputFolder)
+							GUICtrlSetData($sOutputFolder, $tOutputFolder)
 						EndIf
 					Case $sRunSave1
 						SplashTextOn($aUtilName, " Saving settings . . .", 200, 50, -1, -1, $DLG_MOVEABLE, "")
