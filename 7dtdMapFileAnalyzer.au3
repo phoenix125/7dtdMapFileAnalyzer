@@ -1,11 +1,11 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=Resources\phoenix_5Vq_icon.ico
-#AutoIt3Wrapper_Outfile=Builds\7dtdMapFileAnalyzer_v1.2.exe
+#AutoIt3Wrapper_Outfile=Builds\7dtdMapFileAnalyzer_v1.3.exe
 #AutoIt3Wrapper_Res_Comment=By Phoenix125 http://www.Phoenix125.com
 #AutoIt3Wrapper_Res_Description=7 Days To Die Map Alanyzer Utility
-#AutoIt3Wrapper_Res_Fileversion=1.2.0.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.0.0
 #AutoIt3Wrapper_Res_ProductName=7dtdMapFileAnalyzer
-#AutoIt3Wrapper_Res_ProductVersion=v1.2
+#AutoIt3Wrapper_Res_ProductVersion=v1.3
 #AutoIt3Wrapper_Res_CompanyName=http://www.Phoenix125.com
 #AutoIt3Wrapper_Res_LegalCopyright=https://github.com/phoenix125/7dtdMapFileAnalyzer/blob/master/7dtdMapFileAnalyzer.zip
 #AutoIt3Wrapper_Run_AU3Check=n
@@ -30,7 +30,7 @@
 #include <ListViewConstants.au3>
 
 Global $aUtilName = "7dtdMapFileAnalyzer"
-Global $aUtilVersion = "v1.2" ; (2020-06-29)
+Global $aUtilVersion = "v1.3" ; (2020-08-06)
 
 Global Const $aIniFile = @ScriptDir & "\" & $aUtilName & ".ini"
 Global Const $aIniPOI = @ScriptDir & "\" & $aUtilName & "_POI.ini"
@@ -121,23 +121,26 @@ Exit
 
 Func RunScript()
 	ReadUini($aIniFile, $aLogFile)
-	_FileInUse($aOutputFolder & "\" & $aOutputFileNameCSV & ".csv")
+	If $aOutputAppendFileYN = "no" Then FileDelete($aOutputFolder & "\" & $aOutputFileNameCSV & ".csv")
+	Local $tResult = _FileInUse($aOutputFolder & "\" & $aOutputFileNameCSV & ".csv")
+	If $tResult Then Return
 	SplashOff()
 	If $aSourceFD = "F" Then
 		;		SplashTextOn($aUtilName, $aUtilName & " started." & @CRLF & @CRLF & "Reading map file:" & @CRLF & $aSourceFile & ".", 600, 125, -1, -1, $DLG_MOVEABLE, "")
 		;	Local $aCount = MakeMapFileTXT($aSourceFile, $aNPOI, $aPOI, $aSeedname, $aOutputFileNameTXT)
-		Local $aCount = MakeMapFile($aSourceFile, $aSeedname, $aMapSize, $aNPOI, $aPOI, $aOutputFolder & "\" & $aOutputFileNameTXT)
+		Local $aCount = MakeMapFile($aSourceFile, $aSeedname, $aMapSize, $aNPOI, $aPOI, $aOutputFolder & "\" & $aOutputFileNameTXT, $aMapWorld)
 		SplashTextOn($aUtilName, $aUtilName & " started." & @CRLF & @CRLF & "Writing map analysis files:" & @CRLF & $aOutputFileNameTXT & ".", 600, 125, -1, -1, $DLG_MOVEABLE, "")
-		WriteMapCount($aOutputFolder & "\" & $aOutputFileNameCSV, $aOutputFileAppend, $aNPOI, $aPOI, $aCount, $aSeedname, $aMapSize, $aLines)
+		WriteMapCount($aOutputFolder & "\" & $aOutputFileNameCSV, $aOutputFileAppend, $aNPOI, $aPOI, $aCount, $aSeedname, $aMapSize, $aLines, $aMapWorld)
 		SplashOff()
 	Else
 		GetFolderStructure($aSourceDir)
 		For $i = 1 To $sCnt
-			Local $aCount = MakeMapFile($aMapPreFab[$i], $aMapSeed[$i], $aMapSize[$i], $aNPOI, $aPOI, $aOutputFolder & "\" & $aOutputFileNameTXT)
-			WriteMapCount($aOutputFolder & "\" & $aOutputFileNameCSV, $aOutputFileAppend, $aNPOI, $aPOI, $aCount, $aMapSeed[$i], $aMapSize[$i], $aLines)
+			Local $aCount = MakeMapFile($aMapPreFab[$i], $aMapSeed[$i], $aMapSize[$i], $aNPOI, $aPOI, $aOutputFolder & "\" & $aOutputFileNameTXT, $aMapWorld[$i])
+			WriteMapCount($aOutputFolder & "\" & $aOutputFileNameCSV, $aOutputFileAppend, $aNPOI, $aPOI, $aCount, $aMapSeed[$i], $aMapSize[$i], $aLines, $aMapWorld[$i])
 		Next
 		SplashOff()
 	EndIf
+	If $aOutputOpenWhenDoneYN = "yes" Then ShellExecute($aOutputFolder & "\" & $aOutputFileNameCSV & ".csv")
 	MsgBox($MB_OK, $aUtilityVer, "Process complete. Output files are: " & @CRLF & $aOutputFileNameCSV & ".csv" & @CRLF & $aOutputFileNameTXT & "_" & $aSeedname & ".txt" & @CRLF & @CRLF & "Thank you! Visit http://www.Phoenix125.com for more utilities.", 15)
 EndFunc   ;==>RunScript
 
@@ -163,6 +166,8 @@ Func ReadUini($sIniFile = $aIniFile, $sLogFile = $aLogFile)
 	Global $aSeedname = IniRead($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Seed Name", $iniCheck)
 	Global $aMapSize = IniRead($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Map Size (Leave blank if using Directory)", $iniCheck)
 	Global $aUpdateUtil = IniRead($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Check for " & $aUtilName & " Updates? (yes/no)", $iniCheck)
+	Global $aOutputAppendFileYN = IniRead($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Append Data to Existing Output CSV File? (yes/no)", $iniCheck)
+	Global $aOutputOpenWhenDoneYN = IniRead($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Open Output CSV file when done? (yes/no)", $iniCheck)
 	If $iniCheck = $aSourceFD Then
 		$aSourceFD = "D"
 		$iIniFail += 1
@@ -212,6 +217,16 @@ Func ReadUini($sIniFile = $aIniFile, $sLogFile = $aLogFile)
 		$aUpdateUtil = "yes"
 		$iIniFail += 1
 		$iIniError = $iIniError & "Check for util updates, "
+	EndIf
+	If $iniCheck = $aOutputAppendFileYN Then
+		$aOutputAppendFileYN = "no"
+		$iIniFail += 1
+		$iIniError = $iIniError & "Append data to Output CSV, "
+	EndIf
+	If $iniCheck = $aOutputOpenWhenDoneYN Then
+		$aOutputOpenWhenDoneYN = "yes"
+		$iIniFail += 1
+		$iIniError = $iIniError & "Open Output CSV file when done, "
 	EndIf
 
 	For $i = 0 To 49
@@ -275,7 +290,8 @@ Func UpdateIni($sIniFile)
 	IniWrite($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Seed Name", $aSeedname)
 	IniWrite($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Map Size (Leave blank if using Directory)", $aMapSize)
 	IniWrite($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Check for " & $aUtilName & " Updates? (yes/no)", $aUpdateUtil)
-
+	IniWrite($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Append Data to Existing Output CSV File? (yes/no)", $aOutputAppendFileYN)
+	IniWrite($sIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Open Output CSV file when done? (yes/no)", $aOutputOpenWhenDoneYN)
 
 	FileWriteLine($aIniPOI, "[ ----------------------- BRIEF INSTRUCTIONS ----------------------- ]")
 	;	FileWriteLine($sIniFile, "- Source file can contain folders. ex: D:\Users\Server\AppData\Roaming\7DaysToDie\GeneratedWorlds\Geyusa Mountains\prefabs.xml")
@@ -296,7 +312,7 @@ Func UpdateIni($sIniFile)
 EndFunc   ;==>UpdateIni
 #EndRegion ;**** INI Settings - User Variables ***
 
-Func WriteMapCount($tOutputFileNameCSV, $tOutputFileAppend, $tNPOI, $tPOI, $tCount, $tSeed, $tMapSize, $tLines)
+Func WriteMapCount($tOutputFileNameCSV, $tOutputFileAppend, $tNPOI, $tPOI, $tCount, $tSeed, $tMapSize, $tLines, $tWorldName)
 	Local $tFN = $tOutputFileNameCSV & ".csv"
 	FileWriteLine($aLogFile, _NowCalc() & " Writing " & $tFN & " ...")
 	If $tOutputFileAppend = "O" Then
@@ -305,14 +321,14 @@ Func WriteMapCount($tOutputFileNameCSV, $tOutputFileAppend, $tNPOI, $tPOI, $tCou
 		EndIf
 	EndIf
 	If Not FileExists($tFN) Then
-		$tLine = "SeedName,MapSize,Lines"
+		$tLine = "WorldGenSeed,SeedName,MapSize,Lines"
 		For $i = 0 To ($tNPOI - 1)
 			Local $tCSV = StringSplit($tPOI[$i], ",")
 			$tLine = $tLine & "," & $tCSV[1]
 		Next
 		FileWriteLine($tFN, $tLine)
 	EndIf
-	$tLine = $tSeed & "," & $tMapSize & "," & $aLineCount
+	$tLine = $tWorldName & "," & $tSeed & "," & $tMapSize & "," & $aLineCount
 	For $i = 0 To ($tNPOI - 1)
 		$tLine = $tLine & "," & $tCount[$i]
 	Next
@@ -329,9 +345,11 @@ Func _FileInUse($sFile)
 	Switch $Error
 		Case 32 ; ERROR_SHARING_VIOLATION
 			SplashOff()
-			MsgBox($MB_OK, $aUtilityVer, "ERROR! Output file in use: " & @CRLF & $sFile & @CRLF & @CRLF & "Please close Office. " & @CRLF & @CRLF & "Click OK to restart program.")
-			_RestartProgram()
+			MsgBox($MB_OK, $aUtilityVer, "ERROR! Output file in use: " & @CRLF & $sFile & @CRLF & @CRLF & "Please close Office and try again.")
+			Return True
+;~ 			_RestartProgram()
 	EndSwitch
+	Return False
 EndFunc   ;==>_FileInUse
 
 Func _MainGui()
@@ -452,10 +470,21 @@ Func _MainGui()
 	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	Local $sOutputFileNameTXT = GUICtrlCreateInput($aOutputFileNameTXT, $aColMid + 15, $aDown, 165, 21)
 	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
-	GUICtrlCreateLabel("_Seed_Name.txt", $aCol3, $aDown + 3, 75, 17)
+	GUICtrlCreateLabel("_Seed_Name.txt", $aCol3, $aDown + 3, 80, 17)
 	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
-	$aDown = $aDown + 150
+	$aDown = $aDown + 30
+	Local $sOutputDeleteFileN = GUICtrlCreateRadio("Append Data to Existing Output CSV File", $aCol2, $aDown, 300, 21) ;kim125
+	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	$aDown = $aDown + 25
+	Local $sOutputDeleteFileY = GUICtrlCreateRadio("Delete existing Output CSV file and create new", $aCol2, $aDown, 300, 21) ;kim125
+	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+
+	$aDown = $aDown + 35
+	Local $sOutputOpenWhenDoneYN = GUICtrlCreateCheckbox("Open Output CSV file when done", $aCol2, $aDown, 300, 21) ;kim125
+	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+
+	$aDown = $aDown + 75
 	Local $sRunSave1 = GUICtrlCreateButton("Save", $aCol2, $aDown - 2, 75, 25)
 	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	Local $sRunScript = GUICtrlCreateButton("START", $aCol3, $aDown - 2, 75, 25)
@@ -511,6 +540,17 @@ Func _MainGui()
 
 	;set default to Panel1
 	GUISwitch($aPanel[1])
+	If $aOutputAppendFileYN = "yes" Then
+		GUICtrlSetState($sOutputDeleteFileN, $GUI_CHECKED)
+	Else
+		GUICtrlSetState($sOutputDeleteFileY, $GUI_CHECKED)
+	EndIf
+	If $aOutputOpenWhenDoneYN = "yes" Then
+		GUICtrlSetState($sOutputOpenWhenDoneYN, $GUI_CHECKED)
+	Else
+		GUICtrlSetState($sOutputOpenWhenDoneYN, $GUI_UNCHECKED)
+	EndIf
+
 	;show the main GUI
 	GUISetState(@SW_SHOW, $hMainGUI)
 
@@ -594,6 +634,19 @@ Func _MainGui()
 						SplashTextOn($aUtilName, " Settings saved.", 200, 50, -1, -1, $DLG_MOVEABLE, "")
 						Sleep(1000)
 						SplashOff()
+					Case $sOutputDeleteFileN
+						$aOutputAppendFileYN = "yes"
+						IniWrite($aIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Append Data to Existing Output CSV File? (yes/no)", $aOutputAppendFileYN)
+					Case $sOutputDeleteFileY
+						$aOutputAppendFileYN = "no"
+						IniWrite($aIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Append Data to Existing Output CSV File? (yes/no)", $aOutputAppendFileYN)
+					Case $sOutputOpenWhenDoneYN
+						If GUICtrlRead($sOutputOpenWhenDoneYN) = 1 Then
+							$aOutputOpenWhenDoneYN = "yes"
+						Else
+							$aOutputOpenWhenDoneYN = "no"
+							IniWrite($aIniFile, " --------------- " & $aUtilName & " CONFIG --------------- ", "Open Output CSV file when done? (yes/no)", $aOutputOpenWhenDoneYN)
+						EndIf
 					Case $sRunScript
 						SplashTextOn($aUtilName, " Saving settings . . .", 200, 50, -1, -1, $DLG_MOVEABLE, "")
 						If GUICtrlRead($aChkBox[1]) = 1 Then
@@ -689,7 +742,7 @@ Func ShutdownProg()
 	Exit
 EndFunc   ;==>ShutdownProg
 
-Func MakeMapFile($tFN, $tSeed, $tMapSize, $tN, $tPOI, $tFO)
+Func MakeMapFile($tFN, $tSeed, $tMapSize, $tN, $tPOI, $tFO, $tWorldName)
 	FileWriteLine($aLogFile, _NowCalc() & " Reading File: " & $tFN)
 	SplashTextOn($aUtilName, "Reading file:" & @CRLF & $tFN, 600, 125, -1, -1, $DLG_MOVEABLE, "")
 	$tSeedNoSpace = ReplaceSpace($tSeed)
@@ -707,22 +760,23 @@ Func MakeMapFile($tFN, $tSeed, $tMapSize, $tN, $tPOI, $tFO)
 	Local $tMapPathOpen = FileOpen($tFN, 0)
 	Local $tMapRead = FileRead($tMapPathOpen)
 	Global $aLines = _FileCountLines($tMapRead)
-	FileWriteLine($aLogFile, "[" & $tSeed & "] ------------------------------------------------------------")
+	FileWriteLine($aLogFile, "[" & $tWorldName & "] ------------------------------------------------------------")
 	For $i = 0 To ($tN - 2)
 		Local $tCSV = StringSplit($tPOI[$i], ",")
 		For $x = 2 To $tCSV[0]
 			StringReplace($tMapRead, $tCSV[$x], $tCSV[$x])
 			Local $iReplacements = @extended
 			$tReturn[$i] = $tReturn[$i] + $iReplacements
-			FileWriteLine($aLogFile, "[" & $tSeed & "] POI Type - " & $tCSV[1] & " - " & $tCSV[$x] & " (" & $iReplacements & ")")
+			FileWriteLine($aLogFile, "[" & $tWorldName & "] POI Type - " & $tCSV[1] & " - " & $tCSV[$x] & " (" & $iReplacements & ")")
 		Next
-		FileWriteLine($aLogFile, "[" & $tSeed & "] ------------------------------------------------------------ TOTAL " & $tCSV[1] & " (" & $tReturn[$i] & ")")
-		FileWriteLine($tFileOutTxt, "[" & $tSeed & "] TOTAL " & $tCSV[1] & " (" & $tReturn[$i] & ")")
+		FileWriteLine($aLogFile, "[" & $tWorldName & "] ------------------------------------------------------------ TOTAL " & $tCSV[1] & " (" & $tReturn[$i] & ")")
+		FileWriteLine($tFileOutTxt, "[" & $tWorldName & "] TOTAL " & $tCSV[1] & " (" & $tReturn[$i] & ")")
 	Next
 	FileClose($tFN)
-	FileWriteLine($aLogFile, "[" & $tSeed & "] ------------------------------------------------------------ TOTAL LINES (" & $aLineCount & ")")
+	FileWriteLine($aLogFile, "[" & $tWorldName & "] ------------------------------------------------------------ TOTAL LINES (" & $aLineCount & ")")
 	FileWriteLine($tFileOutTxt, "--------------------------------------------------")
-	FileWriteLine($tFileOutTxt, " World Name or Seed: (" & $tSeed & ")")
+	FileWriteLine($tFileOutTxt, "     World Gen Seed: (" & $tWorldName & ")")
+	FileWriteLine($tFileOutTxt, " 		  World Name: (" & $tSeed & ")")
 	FileWriteLine($tFileOutTxt, "           Map Size: (" & $tMapSize & ")")
 	FileWriteLine($tFileOutTxt, "        TOTAL Lines: (" & $aLineCount & ")")
 	FileWriteLine($tFileOutTxt, "--------------------------------------------------")
@@ -731,24 +785,26 @@ EndFunc   ;==>MakeMapFile
 
 Func GetFolderStructure($sSourceDir)
 	$sSourceDir = AddTrailingSlash($sSourceDir)
-	Local $sFiles = _FileListToArrayRec($sSourceDir, "*prefabs.xml;map_info.xml||", $FLTAR_FILES + $FLTAR_NOSYSTEM + $FLTAR_NOHIDDEN, $FLTAR_RECUR, $FLTAR_FASTSORT, $FLTAR_FULLPATH)
+	Local $sFiles = _FileListToArrayRec($sSourceDir, "*prefabs.xml;map_info.xml;GenerationInfo.txt||", $FLTAR_FILES + $FLTAR_NOSYSTEM + $FLTAR_NOHIDDEN, $FLTAR_RECUR, $FLTAR_FASTSORT, $FLTAR_FULLPATH)
 	If @error Then
 		SplashOff()
 		MsgBox($MB_OK, $aUtilityVer, "ERROR! Could not find files in folder: " & @CRLF & $sSourceDir & @CRLF & "Please check the folder." & @CRLF & @CRLF & "Click OK to restart program.")
 		_RestartProgram()
 	EndIf
 
-	Global $sCnt = ($sFiles[0] / 2)
+	Global $sCnt = ($sFiles[0] / 3)
 	Local $sPrefab[$sCnt + 1]
 	Global $aMapSize[$sCnt + 1]
 	Global $aMapSeed[$sCnt + 1]
 	Global $aMapPreFab[$sCnt + 1]
+	Global $aMapWorld[$sCnt + 1]
 	For $i = 1 To $sCnt
-		SplashTextOn($aUtilName, "Reading file:" & @CRLF & $sFiles[($i * 2) - 1], 600, 125, -1, -1, $DLG_MOVEABLE, "")
-		$aMapSize[$i] = GetSize($sFiles[($i * 2) - 1])
-		$aMapSeed[$i] = GetSeed($sFiles[($i * 2) - 1], $sSourceDir)
-		SplashTextOn($aUtilName, "Reading file:" & @CRLF & $sFiles[$i * 2], 600, 125, -1, -1, $DLG_MOVEABLE, "")
-		$aMapPreFab[$i] = $sFiles[$i * 2]
+		SplashTextOn($aUtilName, "Reading file:" & @CRLF & $sFiles[($i * 3) - 1], 600, 125, -1, -1, $DLG_MOVEABLE, "")
+		$aMapSize[$i] = GetSize($sFiles[($i * 3) - 1])
+		$aMapSeed[$i] = GetSeed($sFiles[($i * 3) - 1], $sSourceDir)
+		$aMapWorld[$i] = GetWorld($sFiles[($i * 3) - 2])
+		SplashTextOn($aUtilName, "Reading file:" & @CRLF & $sFiles[$i * 3], 600, 125, -1, -1, $DLG_MOVEABLE, "")
+		$aMapPreFab[$i] = $sFiles[$i * 3]
 	Next
 EndFunc   ;==>GetFolderStructure
 
@@ -769,6 +825,19 @@ EndFunc   ;==>GetSize
 Func GetSeed($tFN, $tSRC)
 	Return _ArrayToString(_StringBetween($tFN, $tSRC, "\"))
 EndFunc   ;==>GetSeed
+Func GetWorld($tFN)
+	If Not FileExists($tFN) Then
+		FileWriteLine($aLogFile, _NowCalc() & " ERROR! Could not find file: " & $tFN)
+		SplashOff()
+		MsgBox($MB_OK, $aUtilityVer, "ERROR! Could not find file: " & @CRLF & $tFN)
+	EndIf
+	Local $tMapPathOpen = FileOpen($tFN, 0)
+	Local $tMapRead = FileRead($tMapPathOpen)
+	FileClose($tFN)
+	Local $tSize = _ArrayToString(_StringBetween($tMapRead, "Original Seed: ", @CRLF))
+	If $tSize = "" Or $tSize = "-1" Then $tSize = "{Error]"
+	Return $tSize
+EndFunc   ;==>GetWorld
 
 Func AddTrailingSlash($aString)
 	Local $bString = StringRight($aString, 1)

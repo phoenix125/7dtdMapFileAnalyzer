@@ -1,1 +1,1 @@
-v1.2^v1.2 Added:|Support for Alpha 19
+v1.3^v1.3 (2020-08-06) v1.3|- Added: World Gen Seed Name Import for A19|- Added: Option to delete or append to output CSV file|- Added: Option to open output CSV file when complete.
