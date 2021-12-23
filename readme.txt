@@ -1,5 +1,5 @@
 7dtdMapFileAnalyzer - A Utility to analyze and compare the number of POIs in your map(s).
-- Latest version: 7dtdMapFileAnalyzer_v1.3 (2020-08-06)
+- Latest version: 7dtdMapFileAnalyzer_v1.4 (2021-12-22)
 - By Phoenix125 | http://www.Phoenix125.com | http://discord.gg/EU7pzPs | kim@kim125.com
 
 ----- FEATURES -----
@@ -44,6 +44,10 @@ Discord: http://discord.gg/EU7pzPs
 Forum:   https://phoenix125.createaforum.com/index.php
 
 ----- VERSION HISTORY -----
+(2021-12-22) v1.4 A20 Compatible
+- Added: A20 compatible
+- Misc:  Improved look of information window
+
 (2020-08-06) v1.3
 - Added: World Gen Seed Name Import for A19
 - Added: Option to delete or append to output CSV file

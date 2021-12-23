@@ -1,1 +1,1 @@
-v1.3^v1.3 (2020-08-06) v1.3|- Added: World Gen Seed Name Import for A19|- Added: Option to delete or append to output CSV file|- Added: Option to open output CSV file when complete.
+v1.4^v1.4 (2021-12-22) v1.4|A20 Compatible|- Added: Updated to be A20 Compatible|- Misc: Improved look of information window
